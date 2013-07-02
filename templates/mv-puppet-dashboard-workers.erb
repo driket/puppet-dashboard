@@ -1,0 +1,88 @@
+#!/bin/sh
+#
+# THIS FILE IS MANAGED BY PUPPET
+# <%= file %>
+#
+ 
+### BEGIN INIT INFO
+# Provides:          mv-puppet-dashboard-workers
+# Required-Start:    $local_fs $remote_fs $network $syslog
+# Required-Stop:     $local_fs $remote_fs $network $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts the puppet dashboard workers
+# Description:       starts puppetdashboard workers
+### END INIT INFO
+ 
+DAEMON="sudo -u www-data env RAILS_ENV=production "
+DAEMON_OPTS="/usr/share/puppet-dashboard/script/delayed_job start"
+NAME=mv-puppet-dashboard-workers
+DESC=mv-puppet-dashboard-workders
+PID=/usr/share/puppet-dashboard/tmp/pids/delayed_job.pid
+OLDPID="$PID.oldbin"
+ 
+sig () {
+    test -s "$PID" && kill -9 `cat $PID`
+}
+ 
+oldsig () {
+    test -s $OLDPID && kill -9 `cat $OLDPID`
+}
+
+exit_code_running () {
+    echo "service is running"
+    exit 0
+}
+
+exit_code_not_running () {
+    echo "service is not running"
+    exit 3
+}
+
+check_process(){
+  [ "$1" = "" ]  && return 0
+  [ `pgrep -f $1` ] && return 1 || return 0
+}
+
+ 
+case "$1" in
+  start)
+    echo -n "Starting $DESC: "
+    $DAEMON $DAEMON_OPTS
+    echo "$NAME."
+    ;;
+  stop)
+    echo -n "Stopping $DESC: "
+    sig QUIT
+    echo "$NAME."
+    ;;
+  restart)
+    echo -n "Restarting $DESC: "
+    sig QUIT
+    sleep 1
+    $DAEMON $DAEMON_OPTS
+    echo "$NAME."
+    ;;
+  status)
+    #test -s "$PID" && exit_code_running || exit_code_not_running
+    check_process "delayed_job"
+    [ $? -eq 0 ] && exit_code_not_running || exit_code_running
+    ;;
+  reload)
+        echo -n "Reloading $DESC code: "
+        sig USR2
+        echo "$NAME."
+        ;;
+  reopen-logs)
+        echo -n "Reopening $DESC logs: "
+        sig USR1
+        echo "$NAME."
+        ;;
+ 
+  *)
+    echo "Usage: $NAME {start|stop|restart|reload|reopen-logs}" >&2
+    exit 1
+    ;;
+esac
+
+exit 0

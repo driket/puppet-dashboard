@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# THIS FILE IS MANAGED BY PUPPET
+# <%= file %>
+#
+
+echo ''
+
+URL="http://production.cf.rubygems.org/rubygems/rubygems-1.3.7.tgz"
+PACKAGE=$(echo $URL | sed "s/\.[^\.]*$//; s/^.*\///")
+
+cd $(mktemp -d /tmp/install_rubygems.XXXXXXXXXX) && \
+wget -c -t10 -T20 -q $URL && \
+tar xfz $PACKAGE.tgz && \
+cd $PACKAGE && \
+sudo ruby setup.rb
+
+update-alternatives --install /usr/bin/gem gem /usr/bin/gem1.8 1
+
+sudo apt-get install puppet-dashboard
+
+sudo chown -R www-data /opt/puppet-dashboard
+
+mysql -u root < mv_puppet_dashboard.sql
+
+cd /usr/share/puppet-dashboard                                                    
+
+rake RAILS_ENV=production db:migrate
