@@ -1,3 +1,6 @@
 Module for Puppet
 ------------------------
 mv_puppet_dashboard
+
+Dependencies : 
+- https://github.com/leinaddm/puppet-htpasswd

@@ -10,6 +10,13 @@ define mv_puppet_dashboard::tools::setup_puppetdashboard (
 	require('mv_puppet_dashboard::packages')
 	require('mv_puppet_dashboard')
 
+	
+	#file { "${mv_puppet_dashboard::config_path}/public/.htaccess":
+	#  owner 	=> 'www-data',
+	#  group 	=> 'www-data',
+	#	content => template("mv_puppet_dashboard/htaccess.erb"),
+	#}
+	 
 	# set proper rights for app
 	#
 	file { "/usr/share/puppet-dashboard":
@@ -37,23 +44,13 @@ define mv_puppet_dashboard::tools::setup_puppetdashboard (
 		require => Package["mv_puppet_dashboard"],
   }
 	
-	# ensure service started 
+	# ensure service stopped 
+	# use apache2 + passenger instead
 	# 
 	service { 'puppet-dashboard':
 		name 			=> 'puppet-dashboard',
-		ensure 		=> running,
+		ensure 		=> stopped,
 	}
-	
-	# puppet-dashboard replacement status file
-	# 
-  file { "/etc/init.d/puppet-dashboard":
-  	ensure 	=> file,
-    content => template("mv_puppet_dashboard/puppet-dashboard.erb"),
-    mode 		=> "750",
-    owner 	=> 'root',
-    group 	=> 'root',
-		require => Package["mv_puppet_dashboard"],
-  }
 	
 	# puppet-dashboard-workers default file
 	# 
@@ -75,7 +72,7 @@ define mv_puppet_dashboard::tools::setup_puppetdashboard (
 	
 	# app db settings
 	# 
-  file { "${mv_puppet_dashboard::config_path}/database.yml":
+  file { "${mv_puppet_dashboard::config_path}/config/database.yml":
   	ensure 	=> file,
     content => template("mv_puppet_dashboard/database.yml.erb"),
     mode 		=> "0600",
@@ -86,7 +83,7 @@ define mv_puppet_dashboard::tools::setup_puppetdashboard (
 	
 	# app patch -> open connection to Ajax
 	# 
-  file { "/usr/share/puppet-dashboard/app/controllers/application_controller.rb":
+  file { "${mv_puppet_dashboard::config_path}/app/controllers/application_controller.rb":
   	ensure 	=> file,
     content => template("mv_puppet_dashboard/application_controller.rb.erb"),
     mode 		=> "0640",
@@ -95,4 +92,5 @@ define mv_puppet_dashboard::tools::setup_puppetdashboard (
 		require => Package["mv_puppet_dashboard"],
 		notify  => Service['puppet-dashboard'],
   }
+	
 }
