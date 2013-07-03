@@ -9,13 +9,6 @@ define mv_puppet_dashboard::tools::setup_puppetdashboard (
 {
 	require('mv_puppet_dashboard::packages')
 	require('mv_puppet_dashboard')
-
-	
-	#file { "${mv_puppet_dashboard::config_path}/public/.htaccess":
-	#  owner 	=> 'www-data',
-	#  group 	=> 'www-data',
-	#	content => template("mv_puppet_dashboard/htaccess.erb"),
-	#}
 	 
 	# set proper rights for app
 	#
